@@ -73,10 +73,3 @@ int error(char *message){
 	printf("ERROR: %s\n", message);
 	return -1;
 }
-
-int main(){
-	char ip[100];
-	unsigned short port = 0;
-	getPublicIpAddress(ip, &port);
-	printf("%s:%d\n", ip, port);
-}
