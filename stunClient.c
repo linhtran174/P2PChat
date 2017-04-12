@@ -4,10 +4,15 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <pthread.h>
 
+int getPublicIpAddress(char * returnIp, unsigned short * returnPort);
+int keepAlive(int socket); //keep UDP socket alive
+
+
+
+//////////////////////CODE////////////////////
 int error(char *message);
-
-//Provide STUN Client API:
 int getPublicIpAddress(char * returnIp, unsigned short * returnPort)
 {
 	//create local socket with port 12345
@@ -64,10 +69,39 @@ int getPublicIpAddress(char * returnIp, unsigned short * returnPort)
 			*returnPort = (buf[26] * 256 + buf[27]) ^ 0x2112;
 			sprintf(returnIp,"%d.%d.%d.%d",buf[28]^0x21,buf[29]^0x12,buf[30]^0xA4,buf[31]^0x42);
 		}
+		keepAlive(localSoc);
 	}
 
 	return 0;
 }
+
+void* sendKeepAlive(void * _socket){
+	int socket = (int)_socket;
+
+	//create dump server address
+	struct sockaddr_in dumpServer;
+    bzero(&dumpServer, sizeof(dumpServer));
+    dumpServer.sin_family = AF_INET;
+    inet_pton(AF_INET, "45.119.81.200", &dumpServer.sin_addr);
+    dumpServer.sin_port = htons(80);	
+
+	while(1){
+		printf("sending keep-alive\n");
+		char nothing[] = "keepAlive";
+		sendto(socket, nothing, 9,
+    	0, (struct sockaddr *)&dumpServer, sizeof(dumpServer));
+		sleep(3);
+	}
+	pthread_exit(NULL);
+}
+
+int keepAlive(int socket){
+	pthread_t thread;
+	int createSuccess = pthread_create( &thread, NULL, &sendKeepAlive, (void *)socket);
+	if(createSuccess)
+		printf("Error - pthread_create() return code: %d\n", createSuccess);
+}
+
 
 int error(char *message){
 	printf("ERROR: %s\n", message);
