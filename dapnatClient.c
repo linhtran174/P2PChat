@@ -6,14 +6,14 @@
 #include <netinet/in.h>
 #include <pthread.h>
 
-int getPublicIpAddress(char * returnIp, unsigned short * returnPort);
+int registerNewUser(char * returnIp, unsigned short * returnPort);
 int keepAlive(int socket); //keep UDP socket alive
 
 
 
 //////////////////////CODE////////////////////
 int error(char *message);
-int getPublicIpAddress(char * returnIp, unsigned short * returnPort)
+int registerNewUser(char* name, char * returnIp, unsigned short * returnPort)
 {
 	//create local socket with port 12345
 	int localSoc = socket(AF_INET, SOCK_DGRAM, 0);
@@ -30,17 +30,25 @@ int getPublicIpAddress(char * returnIp, unsigned short * returnPort)
     bzero(&serverAddr, sizeof(serverAddr));
     serverAddr.sin_family = AF_INET;
     inet_pton(AF_INET, stun_server_ip, &serverAddr.sin_addr);
-    serverAddr.sin_port = htons(stun_server_port);	
+    serverAddr.sin_port = htons(stun_server_port);
 
     //create STUNRequest
     unsigned char STUNRequest[20];
 	* (short *)(&STUNRequest[0]) = htons(0x0001);    // stun_method
-	* (short *)(&STUNRequest[2]) = htons(0x0000);    // msg_length
+	* (short *)(&STUNRequest[2]) = htons(0x00020);    // msg_length
 	* (int *)(&STUNRequest[4])   = htonl(0x2112A442);// magic cookie
 
 	*(int *)(&STUNRequest[8]) = htonl(0x63c7117e);   // transacation ID 
 	*(int *)(&STUNRequest[12])= htonl(0x0714278f);
 	*(int *)(&STUNRequest[16])= htonl(0x5ded3221);
+
+	//register a name
+	int i = 0;
+	while(name[i] != 0){
+		STUNRequest[22+i] = name[i];
+		i++;
+	}
+	
 
     //send request
     short requestResult =
@@ -90,7 +98,7 @@ void* sendKeepAlive(void * _socket){
 		char nothing[] = "keepAlive";
 		sendto(socket, nothing, 9,
     	0, (struct sockaddr *)&dumpServer, sizeof(dumpServer));
-		sleep(3);
+		sleep(10);
 	}
 	pthread_exit(NULL);
 }
