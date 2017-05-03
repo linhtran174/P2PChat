@@ -1,4 +1,4 @@
-#include "stunClient.c"
+#include "dapnatClient.c"
 
 int main(){
 	printf("demo module get IP\n");
