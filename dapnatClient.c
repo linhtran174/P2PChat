@@ -6,14 +6,18 @@
 #include <netinet/in.h>
 #include <pthread.h>
 
-int registerNewUser(char * returnIp, unsigned short * returnPort);
+int registerNewUser(const char* name, char * returnIp, unsigned short * returnPort);
 int keepAlive(int socket); //keep UDP socket alive
 
-
+int main(){
+	char a[10];
+	short b[20];
+	registerNewUser("Linh Tran", a, b);
+}
 
 //////////////////////CODE////////////////////
 int error(char *message);
-int registerNewUser(char* name, char * returnIp, unsigned short * returnPort)
+int registerNewUser(const char* name, char * returnIp, unsigned short * returnPort)
 {
 	//create local socket with port 12345
 	int localSoc = socket(AF_INET, SOCK_DGRAM, 0);
@@ -42,6 +46,8 @@ int registerNewUser(char* name, char * returnIp, unsigned short * returnPort)
 	*(int *)(&STUNRequest[12])= htonl(0x0714278f);
 	*(int *)(&STUNRequest[16])= htonl(0x5ded3221);
 
+
+
 	//register a name
 	int i = 0;
 	while(name[i] != 0){
@@ -49,7 +55,6 @@ int registerNewUser(char* name, char * returnIp, unsigned short * returnPort)
 		i++;
 	}
 	
-
     //send request
     short requestResult =
     sendto(localSoc, STUNRequest, sizeof(STUNRequest),
@@ -63,7 +68,7 @@ int registerNewUser(char* name, char * returnIp, unsigned short * returnPort)
 	unsigned char buf[300]; //buffer
     requestResult = recvfrom(localSoc, buf, 300, 0, NULL, 0); // recv UDP
     if (requestResult == -1) return error("cannot receive any response");
-
+    printf("OK\n"); getchar();
 	// parse response
 	short STUNSuccess = *(short *)(&buf[0]) == htons(0x0101);
 	short attr_type = htons(*(short *)(&buf[20]));
@@ -83,9 +88,22 @@ int registerNewUser(char* name, char * returnIp, unsigned short * returnPort)
 	return 0;
 }
 
-void* sendKeepAlive(void * _socket){
-	int socket = (int)_socket;
+void* messageReceiver(void * _socket){
+	int socket = *(int *)_socket;
+	char messageBuffer[1000];
 
+	struct sockaddr_in senderAddr;
+	socklen_t addrLength = sizeof(senderAddr);
+
+	while(1){
+		recvfrom(socket, messageBuffer, 1000, 0, (struct sockaddr *)&senderAddr, &addrLength);
+		printf("%s\n", messageBuffer);
+	}
+}
+
+void* sendKeepAlive(void *_socket){
+	int socket = *(int *)_socket;
+	printf("OK\n"); getchar();
 	//create dump server address
 	struct sockaddr_in dumpServer;
     bzero(&dumpServer, sizeof(dumpServer));
@@ -105,7 +123,7 @@ void* sendKeepAlive(void * _socket){
 
 int keepAlive(int socket){
 	pthread_t thread;
-	int createSuccess = pthread_create( &thread, NULL, &sendKeepAlive, (void *)socket);
+	int createSuccess = pthread_create( &thread, NULL, &sendKeepAlive, (void *)&socket);
 	if(createSuccess)
 		printf("Error - pthread_create() return code: %d\n", createSuccess);
 }

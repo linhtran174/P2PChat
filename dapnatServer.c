@@ -1,5 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <pthread.h>
 
 int main(){
 	//create local socket with STUN port 3478 
@@ -20,7 +25,7 @@ int main(){
 	while(1){
 
 		unsigned char buf[300]; //buffer
-    	request = recvfrom(localSoc, buf, 300, 0, (struct sockaddr *)&userAddr, &addrLength); // recv UDP
+    	recvfrom(localSoc, buf, 300, 0, (struct sockaddr *)&userAddr, &addrLength); // recv UDP
 
     	short stun_method_code = *(short *)(&buf[0]);
 
@@ -35,7 +40,7 @@ int main(){
 			* (long *)(&STUNResponse[28]) = htonl(userAddr.sin_addr.s_addr ^ 0x2112A442);
 
 			//register-name success code
-			* (short *)(&STUNResponse[32])
+			* (short *)(&STUNResponse[32]);
 
 			sendto(localSoc, STUNResponse, sizeof(STUNResponse), 0,
                (struct sockaddr *)&userAddr, sizeof(userAddr));
