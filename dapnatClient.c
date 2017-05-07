@@ -6,6 +6,9 @@
 #include <netinet/in.h>
 #include <pthread.h>
 
+#include "threadHelper.c"
+#include "socketHelper.c"
+
 //stun.l.google.com:19302
 #define STUN_G "64.233.188.127"
 //xseed.tech
@@ -14,7 +17,7 @@
 
 
 int registerNewUser(const char* name, const char* ipAddress, short* port);
-void keepAlive(int socket); //keep UDP socket alive (port remains constants)
+void* keepAliveService(void* socket); //keep port open on router
 void stunService(int localSoc, char *returnIp, unsigned short *returnPort);
 
 
@@ -23,18 +26,12 @@ int main(){
 	short b[20];
 
 	//create local socket with port 12345
-	int localSoc = socket(AF_INET, SOCK_DGRAM, 0);
-	struct sockaddr_in localAddr;
-    bzero(&localAddr, sizeof(localAddr));
-    localAddr.sin_family = AF_INET;
-    localAddr.sin_port = htons(12345);
-    // inet_pton(AF_INET, "127.0.0.1", &localAddr.sin_addr);
-	bind(localSoc, (struct sockaddr *)&localAddr, sizeof(localAddr));
-
+	int localSoc = createAndBind(12345);
 
 	char publicAddr[16];
 	short openedPort;
 	stunService(localSoc, publicAddr, &openedPort);
+
 	// registerNewUser("Linh Tran", publicAddr, &openedPort);
 
 
@@ -64,15 +61,9 @@ void* messageReceiver(void * _socket){
 }
 
 void stunService(int localSoc, char *returnIp, unsigned short *returnPort){
-
-	//create server socket
+	//create server socket - STUN port 3478
 	struct sockaddr_in serverAddr;
-	char *stun_server_ip = LOCALHOST;
-	unsigned short stun_server_port = 3478;
-    bzero(&serverAddr, sizeof(serverAddr));
-    serverAddr.sin_family = AF_INET;
-    inet_pton(AF_INET, stun_server_ip, &serverAddr.sin_addr);
-    serverAddr.sin_port = htons(stun_server_port);
+	serverAddr = createSocketAddr("localhost", 3478);
 
     //create STUNRequest
     unsigned char STUNRequest[20];
@@ -85,21 +76,11 @@ void stunService(int localSoc, char *returnIp, unsigned short *returnPort){
 	*(int *)(&STUNRequest[16])= htonl(0x5ded3221);
 
     //send request
-    short requestResult =
-    sendto(localSoc, STUNRequest, sizeof(STUNRequest),
-    0, (struct sockaddr *)&serverAddr, sizeof(serverAddr)); // send UDP
-	if (requestResult == -1){
-		error("cannot send STUN request");
-		return;
-	}
+    sendToAddr(localSoc, STUNRequest, sizeof(STUNRequest), &serverAddr); // send UDP
 
 	//read response
 	unsigned char buf[300]; //buffer
-    requestResult = recvfrom(localSoc, buf, 300, 0, NULL, 0); // recv UDP
-    if (requestResult == -1){
-    	error("cannot receive any response");
-    	return;	
-    }
+    receiveFrom(localSoc, buf, 300, NULL); // recv UDP
 
 	// parse response
 	short STUNSuccess = (*(short *)(&buf[0])) == htons(0x0101);
@@ -115,35 +96,22 @@ void stunService(int localSoc, char *returnIp, unsigned short *returnPort){
 			sprintf(returnIp,"%d.%d.%d.%d",buf[28]^0x21,buf[29]^0x12,buf[30]^0xA4,buf[31]^0x42);
 			printf("Public address: %s:%d\n", returnIp, *returnPort);
 		}
-		keepAlive(localSoc);
+		runThread(&keepAliveService, (void*)&localSoc);
 	}
 }
 
-void* sendKeepAlive(void *_socket){
+void* keepAliveService(void *_socket ){
 	int socket = *(int *)_socket;
 
 	//create dump server address
 	struct sockaddr_in dumpServer;
-    bzero(&dumpServer, sizeof(dumpServer));
-    dumpServer.sin_family = AF_INET;
-    inet_pton(AF_INET, XSEED, &dumpServer.sin_addr);
-    dumpServer.sin_port = htons(80);	
+	dumpServer = createSocketAddr("localhost", 3478);
 
 	while(1){
-		printf("sending keep-alive\n");
 		char nothing[] = "keepAlive";
-		sendto(socket, nothing, 9,
-    	0, (struct sockaddr *)&dumpServer, sizeof(dumpServer));
+    	sendToAddr(socket, nothing, 10, &dumpServer);
 		sleep(10);
 	}
-	pthread_exit(NULL);
-}
-
-void keepAlive(int socket){
-	pthread_t thread;
-	int createSuccess = pthread_create( &thread, NULL, &sendKeepAlive, (void *)&socket);
-	if(createSuccess)
-		printf("Error - pthread_create() return code: %d\n", createSuccess);
 }
 
 int error(char *message){

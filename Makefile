@@ -8,6 +8,9 @@ server:
 client:
 	gcc -o client -pthread dapnatClient.c
 
+test:
+	gcc -o test -pthread test.c
+
 clean:
 	rm client
 	rm server
