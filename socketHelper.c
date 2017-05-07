@@ -39,9 +39,7 @@ void sendToAddr(
 	int localSoc, void* buffer,
 	size_t len, struct sockaddr_in *addr){
 	
-	int sendResult;
-	sendResult = 
-	printf("localSoc ID: %d\n", localSoc);
+	int sendResult = 
 	sendto(localSoc, buffer, len,
     0, (struct sockaddr *)addr, SOC_SIZE);
     if(sendResult == -1){

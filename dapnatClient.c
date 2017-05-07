@@ -96,7 +96,10 @@ void stunService(int localSoc, char *returnIp, unsigned short *returnPort){
 			sprintf(returnIp,"%d.%d.%d.%d",buf[28]^0x21,buf[29]^0x12,buf[30]^0xA4,buf[31]^0x42);
 			printf("Public address: %s:%d\n", returnIp, *returnPort);
 		}
-		runThread(&keepAliveService, (void*)&localSoc);
+		//prepare arg for thread
+		void *arg = malloc(sizeof(int));
+		*((int*)arg) = localSoc;
+		runThread(&keepAliveService, arg);
 	}
 }
 
