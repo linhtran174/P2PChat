@@ -2,9 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <pthread.h>
 
 #include "threadHelper.c"
 #include "socketHelper.c"
@@ -13,26 +10,33 @@
 #define STUN_G "64.233.188.127"
 //xseed.tech
 #define XSEED "45.119.81.200"
-#define LOCALHOST "127.0.0.1"
 
 
 int registerNewUser(const char* name, const char* ipAddress, short* port);
 void* keepAliveService(void* socket); //keep port open on router
-void stunService(int localSoc, char *returnIp, unsigned short *returnPort);
+void stunService(Socket me, char *returnIp, unsigned short *returnPort);
 
+Socket me;
 
 int main(){
 	char a[10];
 	short b[20];
 
 	//create local socket with port 12345
-	int localSoc = createAndBind(12345);
+	me = newSocket("localhost", "3000");
 
 	char publicAddr[16];
 	short openedPort;
-	stunService(localSoc, publicAddr, &openedPort);
+	stunService(me, publicAddr, &openedPort);
 
-	// registerNewUser("Linh Tran", publicAddr, &openedPort);
+	printf("DAPNAT Client - %s:%d\n", publicAddr, openedPort);
+	printf("Please enter your name (A-Z | 1-9 | less than 100 characters): ");
+
+	char buf[1000];
+	fgets(buf, 1000, stdin);
+
+	registerNewUser(buf, publicAddr, &openedPort);
+
 
 
 	pthread_exit(NULL);
@@ -42,7 +46,10 @@ int main(){
 int error(char *message);
 int registerNewUser(const char* name, const char* ipAddress, short* port)
 {
-	
+	// const char *portStr = itoa
+	// int messageLength = 
+	// char message[strlen(name) + strlen(ipAddress)] = "REG "
+	// sendToAddr()
 
 	return 0;
 }
@@ -60,10 +67,11 @@ void* messageReceiver(void * _socket){
 	}
 }
 
-void stunService(int localSoc, char *returnIp, unsigned short *returnPort){
+void stunService(Socket me, char *returnIp, unsigned short *returnPort){
+	int localSoc = me->systemSocketId;
 	//create server socket - STUN port 3478
 	struct sockaddr_in serverAddr;
-	serverAddr = createSocketAddr("localhost", 3478);
+	serverAddr = createSocketAddr(XSEED, 3478);
 
     //create STUNRequest
     unsigned char STUNRequest[20];
@@ -88,7 +96,7 @@ void stunService(int localSoc, char *returnIp, unsigned short *returnPort){
 	short attr_length = htons(*(short *)(&buf[22]));
 	if (STUNSuccess)
 	{	
-		printf("STUN binding resp: success !\n");
+		// printf("STUN binding resp: success !\n");
 		if (attr_type == 0x0020)
 		{
 			// parse : port, IP 
