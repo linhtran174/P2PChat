@@ -23,10 +23,10 @@ int main(){
 	short b[20];
 
 	//create local socket with port 12345
-	me = newSocket("localhost", "3000");
+	me = newSocket("localhost", "12345");
 
 	char publicAddr[16];
-	short openedPort;
+	unsigned short openedPort;
 	stunService(me, publicAddr, &openedPort);
 
 	printf("DAPNAT Client - %s:%d\n", publicAddr, openedPort);
@@ -54,24 +54,11 @@ int registerNewUser(const char* name, const char* ipAddress, short* port)
 	return 0;
 }
 
-void* messageReceiver(void * _socket){
-	int socket = *(int *)_socket;
-	char messageBuffer[1000];
-
-	struct sockaddr_in senderAddr;
-	socklen_t addrLength = sizeof(senderAddr);
-
-	while(1){
-		recvfrom(socket, messageBuffer, 1000, 0, (struct sockaddr *)&senderAddr, &addrLength);
-		printf("%s\n", messageBuffer);
-	}
-}
-
 void stunService(Socket me, char *returnIp, unsigned short *returnPort){
 	int localSoc = me->systemSocketId;
 	//create server socket - STUN port 3478
 	struct sockaddr_in serverAddr;
-	serverAddr = createSocketAddr(XSEED, 3478);
+	serverAddr = createSocketAddr("localhost", 3478);
 
     //create STUNRequest
     unsigned char STUNRequest[20];
@@ -119,9 +106,9 @@ void* keepAliveService(void *_socket ){
 	dumpServer = createSocketAddr("localhost", 3478);
 
 	while(1){
+		sleep(10);
 		char nothing[] = "keepAlive";
     	sendToAddr(socket, nothing, 10, &dumpServer);
-		sleep(10);
 	}
 }
 
