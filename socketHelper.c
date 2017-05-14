@@ -22,6 +22,25 @@ void receive(Socket me, Socket sender, char* message);
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //////////////////////////////LEVEL 1 API: HELPER FUNCTIONS//////////////////////////////////////////////
 struct sockaddr_in createSocketAddr(char *ipAddr, short port);
 int createAndBind(short port);
@@ -46,7 +65,7 @@ Socket newSocket(char *ip, char *port){
 
 void sendTo(Socket me, Socket receiver, char *message){
 	struct sockaddr_in receiverAddr = createSocketAddr(receiver->ip, atoi(receiver->port));
-	sendToAddr(me->systemSocketId, (void*) message, strlen(message), &receiverAddr);
+	sendToAddr(me->systemSocketId, (void*) message, strlen(message) + 1, &receiverAddr);
 }
 
 void receive(Socket me, Socket sender, char *message){

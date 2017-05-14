@@ -16,7 +16,7 @@ int registerNewUser(const char* name, const char* ipAddress, short* port);
 void* keepAliveService(void* socket); //keep port open on router
 void stunService(Socket me, char *returnIp, unsigned short *returnPort);
 
-Socket me;
+Socket me, server;
 
 int main(){
 	char a[10];
@@ -24,20 +24,28 @@ int main(){
 
 	//create local socket with port 12345
 	me = newSocket("localhost", "12345");
+	server = newSocket("127.0.0.1", "3478");
 
-	char publicAddr[16];
-	unsigned short openedPort;
-	stunService(me, publicAddr, &openedPort);
-
-	printf("DAPNAT Client - %s:%d\n", publicAddr, openedPort);
-	printf("Please enter your name (A-Z | 1-9 | less than 100 characters): ");
-
-	char buf[1000];
-	fgets(buf, 1000, stdin);
-
-	registerNewUser(buf, publicAddr, &openedPort);
+	sendTo(me, server, "REG_Linh Tran");
+	sendTo(me, server, "REG_Minh Phung");
 
 
+	// char publicAddr[16];
+	// unsigned short openedPort;
+	// stunService(me, publicAddr, &openedPort);
+
+	// printf("DAPNAT Client - %s:%d\n", publicAddr, openedPort);
+	// printf("Please enter your name (A-Z | 1-9 | less than 100 characters): ");
+
+	// char name[1000];
+	// fgets(name, 1000, stdin);
+
+	// registerNewUser(name, publicAddr, &openedPort);
+
+	// //receive message loop
+	// // while(1){
+	// // 	receive(me, )
+	// // }
 
 	pthread_exit(NULL);
 }

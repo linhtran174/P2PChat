@@ -8,32 +8,90 @@
 
 #include "threadHelper.c"
 #include "socketHelper.c"
+#include "dapnatUser.c"
 
 void stunService(char *buf, Socket client);
+void registerNewUser(char *message, Socket client);
 
 Socket me;
+User users[5000];
+int userCount = 0;
 
 int main(){
 	//create local socket with STUN port 3478 
 	me = newSocket("localhost", "3478");
 	// runThread(&stunService, (void*) &localSoc);
 
+
 	Socket client = newSocket("","");
 	char messageBuffer[500];
+	memset(messageBuffer, 1,500);
 
 	short stun_method_code;
 	while(1){
+		getchar();
 		receive(me, client, messageBuffer);
+		printf("received message: %s", messageBuffer);
 		stun_method_code = ntohs(*(short *)(&messageBuffer[0]));
 		if(stun_method_code == 1){
 			stunService(messageBuffer, client);
 		}
-		// else{
-		// 	switch()
-		// }
+		else{
+			registerNewUser(messageBuffer, client);
+			
+		}
 	}
 
-	pthread_exit(NULL);
+	// pthread_exit(NULL);
+}
+
+
+int numOfUser = 0;
+void stringAppend(char *parent, char *child){
+	int count = strlen(parent);
+	strcpy(&parent[count], child);
+}
+
+void registerNewUser(char *message, Socket client){
+
+	char name[30];
+	int i = 4;
+	while(message[i] != 0){
+		name[i-4] = message[i];
+		i++;
+	}
+
+	User temp = newUser(name, client);
+	users[userCount] = temp;
+	userCount++;
+	
+	//gui list
+	char buf[500]; buf[0] = 0;
+	stringAppend(buf, "LST_");
+	sprintf(&buf[4], "%d", userCount - 1);
+	stringAppend(buf, "_");
+
+	for(i = 0; i < userCount - 1; i++){
+		stringAppend(buf, users[i]->name);
+		stringAppend(buf, "_");
+		stringAppend(buf, users[i]->soc->ip);
+		stringAppend(buf, "_");
+		stringAppend(buf, users[i]->soc->port);
+	}
+	sendTo(me, client, buf);
+
+	//gui new cho tat ca user
+	stringAppend(buf, "NEW");
+	stringAppend(buf, "_");
+	stringAppend(buf, temp->name);
+	stringAppend(buf, "_");
+	stringAppend(buf, client->ip);
+	stringAppend(buf, "_");
+	stringAppend(buf, client->port);
+
+	for(i = 0; i < userCount - 1; i++){
+		sendTo(me, users[i]->soc, buf);
+	}
 }
 
 

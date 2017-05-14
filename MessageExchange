@@ -1,10 +1,14 @@
 //Message exchange client - server:
-Linh->s: "REG Linh Tran<1.2.3.4>"
+Linh->s: "REG_Linh Tran_1.2.3.4_29420"
 s->Linh: "LST 0"
 
-Phung->s: "REG Phung Mai<1.2.3.5>"
-s->Phung: "LST 1 Linh Tran<1.2.3.4>"
+Phung->s: "REG_Phung Mai_1.2.3.5_>"
+s->Phung: "LST_1_Linh Tran_1.2.3.4_29420"
 s->Linh:  "NEW Phung Mai<1.2.3.5>"
+
+
+clients[ "Linh Tran_1.2.3.4_29420 Phung Mai_2.3.4.5_30948"]
+
 
 Phung->Linh: "hello kitty" (periodic, 20 seconds interval)
 Linh->Phung: "hello kitty" (20s interval)
@@ -19,5 +23,12 @@ Thinh->Linh: "hello kitty"	(20s)
 Linh->Thinh: "hello kitty"	(20s)
 Phung-> Thinh: "hello kitty" (20s)
 
-Linh->Phung:"Hello, let's start talking peer to peer"
-Linh->Thinh:"Hello, let's start talking peer to peer"
+Linh->Phung:"MES Hello, let's start talking peer to peer"
+Linh->Thinh:"MES Hello, let's start talking peer to peer"
+
+
+Phung:"Chao PHung"
+
+
+Phung => ip
+sendTo(ip, MES)
