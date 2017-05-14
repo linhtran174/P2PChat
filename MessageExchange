@@ -1,0 +1,23 @@
+//Message exchange client - server:
+Linh->s: "REG Linh Tran<1.2.3.4>"
+s->Linh: "LST 0"
+
+Phung->s: "REG Phung Mai<1.2.3.5>"
+s->Phung: "LST 1 Linh Tran<1.2.3.4>"
+s->Linh:  "NEW Phung Mai<1.2.3.5>"
+
+Phung->Linh: "hello kitty" (periodic, 20 seconds interval)
+Linh->Phung: "hello kitty" (20s interval)
+
+Thinh->s: "REG Thinh Tran<1.2.3.6>"
+s->Thinh: "LST 2 Linh Tran<1.2.3.4> Phung Mai<1.2.3.5>"
+s->Phung: "NEW Thinh Tran<1.2.3.6>"
+s->Linh:  "NEW Thinh Tran<1.2.3.6>"
+
+Thinh->Phung: "hello kitty" (20s)
+Thinh->Linh: "hello kitty"	(20s)
+Linh->Thinh: "hello kitty"	(20s)
+Phung-> Thinh: "hello kitty" (20s)
+
+Linh->Phung:"Hello, let's start talking peer to peer"
+Linh->Thinh:"Hello, let's start talking peer to peer"
