@@ -64,6 +64,7 @@ Socket newSocket(char *ip, char *port){
 }
 
 void sendTo(Socket me, Socket receiver, char *message){
+	printf("sendTo: %s", message);
 	struct sockaddr_in receiverAddr = createSocketAddr(receiver->ip, atoi(receiver->port));
 	sendToAddr(me->systemSocketId, (void*) message, strlen(message) + 1, &receiverAddr);
 }

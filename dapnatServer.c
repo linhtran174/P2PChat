@@ -60,6 +60,7 @@ void registerNewUser(char *message, Socket client){
 		name[i-4] = message[i];
 		i++;
 	}
+	name[i] = 0;
 
 	User temp = newUser(name, client);
 	users[userCount] = temp;
@@ -79,6 +80,7 @@ void registerNewUser(char *message, Socket client){
 		stringAppend(buf, users[i]->soc->port);
 	}
 	sendTo(me, client, buf);
+	buf[0] = 0;
 
 	//gui new cho tat ca user
 	stringAppend(buf, "NEW");

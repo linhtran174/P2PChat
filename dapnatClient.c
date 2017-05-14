@@ -24,15 +24,13 @@ int main(){
 
 	//create local socket with port 12345
 	me = newSocket("localhost", "12345");
-	server = newSocket("127.0.0.1", "3478");
+	server = newSocket(XSEED, "3478");
 
 	sendTo(me, server, "REG_Linh Tran");
-	sendTo(me, server, "REG_Minh Phung");
 
-
-	// char publicAddr[16];
-	// unsigned short openedPort;
-	// stunService(me, publicAddr, &openedPort);
+	char publicAddr[16];
+	unsigned short openedPort;
+	stunService(me, publicAddr, &openedPort);
 
 	// printf("DAPNAT Client - %s:%d\n", publicAddr, openedPort);
 	// printf("Please enter your name (A-Z | 1-9 | less than 100 characters): ");
@@ -42,10 +40,14 @@ int main(){
 
 	// registerNewUser(name, publicAddr, &openedPort);
 
-	// //receive message loop
-	// // while(1){
-	// // 	receive(me, )
-	// // }
+	// receive message loop
+	char buf[1000];
+	memset(buf, 1, 1000);
+	while(1){
+		getchar();
+		receive(me, server, buf);
+		printf("received message: %s", buf);
+	}
 
 	pthread_exit(NULL);
 }
