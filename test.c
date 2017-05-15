@@ -6,37 +6,28 @@
 #include <netinet/in.h>
 #include <pthread.h>
 
-// #include "socketHelper.c"
+#include "socketHelper.c"
 #include "dapnatUser.c"
 void printUser(User user);
 
 int main(){
-
-	mapPut("Linh Tran", 
-		newUser("Linh Tran",
-			newSocket("123.456.789.10", "1234")
-		)
+	User user = newUser("Linh Tran",
+		newSocket("123.456.789.10", "1234")
 	);
 
-	mapPut("Thinh Tran",
-		newUser("Thinh Tran",
-			newSocket("12.34.56.78", "2345")
-		)
-	);
+	mapPut("Linh Tran", user);
+	User Linh = mapGet("Linh Tran");
 
-	mapPut("Phung Mai Minh",
-		newUser("Phung Mai Minh", 
-			newSocket("34.56.78.910", "3456")
-		)
-	);
+	char *linh = serializeUser(Linh);
 
-	User linh = mapGet("Linh Tran");
-	User phung = mapGet("Phung Mai Minh");
-	User thinh = mapGet("Thinh Tran");
+	Linh = parseUser(linh);
+	linh = serializeUser(Linh);
+	Linh = parseUser(linh);
+	linh = serializeUser(Linh);
+	Linh = parseUser(linh);
 
-	printUser(linh);
-	printUser(phung);
-	printUser(thinh);
+	printUser(Linh);
+	
 	pthread_exit(NULL);
 }
 

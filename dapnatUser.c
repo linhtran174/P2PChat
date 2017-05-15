@@ -1,5 +1,3 @@
-#include "socketHelper.c"
-
 struct _user{
 	struct _user *left;
 	struct _user *right;
@@ -50,4 +48,28 @@ void mapPut(char *name, User user){
 
 User mapGet(char *name){
 	return getUser(__root, name);
+}
+
+User parseUser(char *string){
+	char name[30];
+	char ip[16];
+	char port[6];
+	strcpy(name, strtok(string, "_"));
+	strcpy(ip, strtok(NULL, "_"));
+	strcpy(port, strtok(NULL, "_"));
+
+	User user = newUser(
+		name, newSocket(ip, port)
+	);
+	return user;
+}
+
+char *serializeUser(User user){
+	char *string = (char *)malloc(30+16+6);
+	sprintf(string, "%s_%s_%s",
+	  user->name,
+	  user->soc->ip,
+	  user->soc->port
+	);
+	return string;
 }

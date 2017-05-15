@@ -24,23 +24,6 @@ void receive(Socket me, Socket sender, char* message);
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //////////////////////////////LEVEL 1 API: HELPER FUNCTIONS//////////////////////////////////////////////
 struct sockaddr_in createSocketAddr(char *ipAddr, short port);
 int createAndBind(short port);

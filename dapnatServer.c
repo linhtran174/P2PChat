@@ -81,6 +81,7 @@ void registerNewUser(char *message, Socket client){
 		stringAppend(buf, users[i]->soc->ip);
 		stringAppend(buf, "_");
 		stringAppend(buf, users[i]->soc->port);
+		stringAppend(buf, "|");
 	}
 	sendTo(me, client, buf);
 	buf[0] = 0;

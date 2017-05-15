@@ -5,6 +5,7 @@
 
 #include "threadHelper.c"
 #include "socketHelper.c"
+#include "dapnatUser.c"
 
 //stun.l.google.com:19302
 #define STUN_G "64.233.188.127"
@@ -12,7 +13,8 @@
 #define XSEED "45.119.81.200"
 
 
-int registerNewUser(const char* name, const char* ipAddress, short* port);
+int registerNewUser(const char* name);
+int parseUserList(const char *messageBuffer, int numOfUser);
 void* keepAliveService(void* socket); //keep port open on router
 void stunService(Socket me, char *returnIp, unsigned short *returnPort);
 
@@ -24,11 +26,7 @@ void stringAppend(char *parent, char *child){
 }
 
 
-
 int main(){
-	char a[10];
-	short b[20];
-
 	//create local socket with port 12345
 	me = newSocket("localhost", "12345");
 	server = newSocket("127.0.0.1", "3478");
@@ -37,16 +35,13 @@ int main(){
 	unsigned short openedPort;
 	stunService(me, publicAddr, &openedPort);
 
-	sendTo(me, server, "REG_Linh Tran");
-	sendTo(me, server, "REG_Minh Phung");
+	printf("DAPNAT Client - %s:%d\n", publicAddr, openedPort);
+	printf("Please enter your name (A-Z | 1-9 | less than 100 characters): ");
 
-	// printf("DAPNAT Client - %s:%d\n", publicAddr, openedPort);
-	// printf("Please enter your name (A-Z | 1-9 | less than 100 characters): ");
+	char name[1000];
+	fgets(name, 1000, stdin);
 
-	// char name[1000];
-	// fgets(name, 1000, stdin);
-
-	// registerNewUser(name, publicAddr, &openedPort);
+	registerNewUser(name);
 
 	// receive message loop
 	char messageBuffer[1000];
@@ -64,14 +59,9 @@ int main(){
 
 			//parse numOfUser
 			int numOfUser;
-			sscanf(%messageBuffer[4], "%d", &numOfUser);
+			sscanf(&messageBuffer[4], "%d", &numOfUser);
 
-			int i;
-			for(i = 0; i < numOfUser; i++){
-				
-			}
-
-
+			parseUserList(&messageBuffer[6], numOfUser);
 		}
 		else if(strcmp(messageCode, "NEW") == 0){
 			printf("processing NEW\n");
@@ -87,13 +77,9 @@ int main(){
 
 //////////////////////CODE////////////////////
 int error(char *message);
-int registerNewUser(const char* name, const char* ipAddress, short* port)
+int registerNewUser(const char* name)
 {
-	// const char *portStr = itoa
-	// int messageLength = 
-	// char message[strlen(name) + strlen(ipAddress)] = "REG "
-	// sendToAddr()
-
+	sendTo(me, server, "REG_Linh Tran");
 	return 0;
 }
 
@@ -158,4 +144,8 @@ void* keepAliveService(void *_socket ){
 int error(char *message){
 	printf("ERROR: %s\n", message);
 	return -1;
+}
+
+void parseUserList(string ){
+
 }
