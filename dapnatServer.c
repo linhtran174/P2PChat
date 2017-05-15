@@ -26,20 +26,22 @@ int main(){
 	Socket client = newSocket("","");
 	char messageBuffer[500];
 	memset(messageBuffer, 1,500);
+	messageBuffer[499] = 0;
 
 	short stun_method_code;
 	while(1){
-		getchar();
 		receive(me, client, messageBuffer);
-		printf("received message: %s", messageBuffer);
+		
 		stun_method_code = ntohs(*(short *)(&messageBuffer[0]));
 		if(stun_method_code == 1){
 			stunService(messageBuffer, client);
 		}
 		else{
 			registerNewUser(messageBuffer, client);
-			
 		}
+
+		memset(messageBuffer, 1,500);		
+		messageBuffer[499] = 0;
 	}
 
 	// pthread_exit(NULL);
@@ -53,18 +55,19 @@ void stringAppend(char *parent, char *child){
 }
 
 void registerNewUser(char *message, Socket client){
-
+	//copy name 
 	char name[30];
-	int i = 4;
+	int i = 4;	
 	while(message[i] != 0){
 		name[i-4] = message[i];
 		i++;
 	}
-	name[i] = 0;
+	name[i-4] = 0;
 
 	User temp = newUser(name, client);
 	users[userCount] = temp;
 	userCount++;
+
 	
 	//gui list
 	char buf[500]; buf[0] = 0;

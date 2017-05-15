@@ -64,7 +64,7 @@ Socket newSocket(char *ip, char *port){
 }
 
 void sendTo(Socket me, Socket receiver, char *message){
-	printf("sendTo: %s", message);
+	// printf("sendTo: \'%s\', length: %d\n", message, (int)strlen(message));
 	struct sockaddr_in receiverAddr = createSocketAddr(receiver->ip, atoi(receiver->port));
 	sendToAddr(me->systemSocketId, (void*) message, strlen(message) + 1, &receiverAddr);
 }
@@ -74,6 +74,7 @@ void receive(Socket me, Socket sender, char *message){
 	receiveFrom(me->systemSocketId, (void*) message, strlen(message), &senderAddr);
 	sprintf(sender->port, "%d", ntohs(senderAddr.sin_port));
 	inet_ntop(AF_INET, &senderAddr.sin_addr, sender->ip, IP_STRING_SIZE);
+	// printf("received message: \'%s\', length: %d\n", message, (int)strlen(message));
 }
 
 int createAndBind(short port){

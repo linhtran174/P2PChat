@@ -9,3 +9,5 @@ User newUser(char *name, Socket soc){
 	temp->soc = soc;
 	return temp;
 }
+
+

@@ -18,19 +18,27 @@ void stunService(Socket me, char *returnIp, unsigned short *returnPort);
 
 Socket me, server;
 
+void stringAppend(char *parent, char *child){
+	int count = strlen(parent);
+	strcpy(&parent[count], child);
+}
+
+
+
 int main(){
 	char a[10];
 	short b[20];
 
 	//create local socket with port 12345
 	me = newSocket("localhost", "12345");
-	server = newSocket(XSEED, "3478");
-
-	sendTo(me, server, "REG_Linh Tran");
+	server = newSocket("127.0.0.1", "3478");
 
 	char publicAddr[16];
 	unsigned short openedPort;
 	stunService(me, publicAddr, &openedPort);
+
+	sendTo(me, server, "REG_Linh Tran");
+	sendTo(me, server, "REG_Minh Phung");
 
 	// printf("DAPNAT Client - %s:%d\n", publicAddr, openedPort);
 	// printf("Please enter your name (A-Z | 1-9 | less than 100 characters): ");
@@ -41,12 +49,37 @@ int main(){
 	// registerNewUser(name, publicAddr, &openedPort);
 
 	// receive message loop
-	char buf[1000];
-	memset(buf, 1, 1000);
+	char messageBuffer[1000];
+	memset(messageBuffer, 1, 1000);
+	messageBuffer[999] = 0;
+
+	char messageCode[4];
 	while(1){
-		getchar();
-		receive(me, server, buf);
-		printf("received message: %s", buf);
+		receive(me, server, messageBuffer);
+		//do something with messageBuffer
+
+		strncpy(messageCode, messageBuffer, 3);
+		if(strcmp(messageCode, "LST") == 0){
+			printf("processing LST\n");
+
+			//parse numOfUser
+			int numOfUser;
+			sscanf(%messageBuffer[4], "%d", &numOfUser);
+
+			int i;
+			for(i = 0; i < numOfUser; i++){
+				
+			}
+
+
+		}
+		else if(strcmp(messageCode, "NEW") == 0){
+			printf("processing NEW\n");
+
+		}
+
+		memset(messageBuffer, 1, 1000);
+		messageBuffer[999] = 0;
 	}
 
 	pthread_exit(NULL);
