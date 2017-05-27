@@ -11,22 +11,10 @@
 void printUser(User user);
 
 int main(){
-	User user = newUser("Linh Tran",
-		newSocket("123.456.789.10", "1234")
-	);
-
-	mapPut("Linh Tran", user);
-	User Linh = mapGet("Linh Tran");
-
-	char *linh = serializeUser(Linh);
-
-	Linh = parseUser(linh);
-	linh = serializeUser(Linh);
-	Linh = parseUser(linh);
-	linh = serializeUser(Linh);
-	Linh = parseUser(linh);
-
-	printUser(Linh);
+	char messageCode[4];
+	strncpy(messageCode, "LST 0 aaskld", 3);
+	messageCode[3] = 0;
+  	printf("%d", strcmp(messageCode, "LST")==0);
 	
 	pthread_exit(NULL);
 }

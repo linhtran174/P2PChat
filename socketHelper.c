@@ -22,8 +22,6 @@ void receive(Socket me, Socket sender, char* message);
 
 
 
-
-
 //////////////////////////////LEVEL 1 API: HELPER FUNCTIONS//////////////////////////////////////////////
 struct sockaddr_in createSocketAddr(char *ipAddr, short port);
 int createAndBind(short port);
@@ -33,6 +31,25 @@ void receiveFrom(int socket, void *buffer, size_t len, struct sockaddr_in *sende
 
 
 ////////////CODE//////////////////////////////////////////////////////////////////////
+Socket parseSocket(char* soc){
+	if(soc == NULL) return NULL;
+	Socket new = newSocket("", "");
+	int ptr = 0;
+	while(soc[ptr] != ':'){
+		new->ip[ptr] = soc[ptr];
+		ptr++;
+	}
+	new->ip[ptr++] = 0;
+	strcpy(new->port, &soc[ptr]);
+	return new;
+}
+
+char* serialiseSocket(Socket soc){
+	char* temp = (char*)malloc(16+6);
+	sprintf(temp, "%s:%s", soc->ip, soc->port);
+	return temp;
+}
+
 Socket newSocket(char *ip, char *port){
 	Socket soc = (Socket)malloc(sizeof(struct _dapNatSocket));
 	if(!strcmp("localhost", ip)){

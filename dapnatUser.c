@@ -1,75 +1,65 @@
-struct _user{
-	struct _user *left;
-	struct _user *right;
-	Socket soc;
-	char name[30]; //20 chars
-};
-typedef struct _user *User;
+typedef struct _treeNode{
+	struct _treeNode *left;
+	struct _treeNode *right;
+	char key[50];
+	char value[16+6]; //ddd.ddd.ddd.ddd:ddddd
+}* Node;
 
-void  mapPut(char *name, User user);
-User mapGet(char *name);
+void   phonebookPut(char *name, char* soc);
+char*  phonebookGet(char *nameOrSocket);
 
-User __root = NULL;
+Node __root = NULL;
 
-User newUser(char *name, Socket soc){
-	User temp = (User)malloc(sizeof(struct _user));
-	temp->left = NULL;
-	temp->right = NULL;
-	strcpy(temp->name, name);
-	temp->soc = soc;
-
+Node newNode(char* key, char* value){
+	Node temp = (Node)malloc(sizeof(struct _treeNode));
+	strcpy(temp->key, key);
+	strcpy(temp->value, value);
 	return temp;
 }
 
-User getUser(User root, char *name){
+Node getNode(Node root, char *key){
 	if(root == NULL) return NULL;
-	int compare = strcmp(root->name, name);
+	int compare = strcmp(root->key, key);
 	if(compare == 0) return root;
-	if(compare >= 0) return getUser(root->left, name);
-	else return getUser(root->right, name);
+	if(compare >= 0) return getNode(root->left, key);
+	return getNode(root->right, key);
 }
 
-void putUser(User *root, User new){
+void putNode(Node *root, Node new){
 	if(*root == NULL){
 		*root = new;
 		return;
 	}
-	if(strcmp((*root)->name, new->name) >= 0){
-		putUser(&((*root)->left), new );
+	if(strcmp((*root)->key, new->key) >= 0){
+		putNode(&((*root)->left), new );
 	}
 	else{
-		putUser(&((*root)->right), new);
+		putNode(&((*root)->right), new);
 	}
 }
 
-void mapPut(char *name, User user){
-	putUser(&__root, user);
+void phonebookPut(char *name, char* soc){
+	// printf("phonebookPut: name: %s, soc: %s\n", name, soc);
+	Node nameToSoc = newNode(name, soc);
+	Node socToName = newNode(soc, name);
+	putNode(&__root, nameToSoc);
+	putNode(&__root, socToName);
 }
 
-User mapGet(char *name){
-	return getUser(__root, name);
+char* phonebookGet(char *nameOrSocket){
+	Node result = getNode(__root, nameOrSocket);
+	if(result == NULL) return NULL;
+	return result->value;
 }
 
-User parseUser(char *string){
-	char name[30];
-	char ip[16];
-	char port[6];
-	strcpy(name, strtok(string, "_"));
-	strcpy(ip, strtok(NULL, "_"));
-	strcpy(port, strtok(NULL, "_"));
+typedef struct _dapnatUser{
+	char name[50];
+	Socket soc;
+} *User;
 
-	User user = newUser(
-		name, newSocket(ip, port)
-	);
-	return user;
-}
-
-char *serializeUser(User user){
-	char *string = (char *)malloc(30+16+6);
-	sprintf(string, "%s_%s_%s",
-	  user->name,
-	  user->soc->ip,
-	  user->soc->port
-	);
-	return string;
+User newUser(char *name, Socket soc){
+	User new = (User)malloc(sizeof(struct _dapnatUser));
+	strcpy(new->name , name);
+	new->soc = newSocket(soc->ip, soc->port);
+	return new;
 }

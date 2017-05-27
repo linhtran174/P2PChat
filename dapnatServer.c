@@ -27,17 +27,21 @@ int main(){
 	char messageBuffer[500];
 	memset(messageBuffer, 1,500);
 	messageBuffer[499] = 0;
+	// char dapnatMessageCode[4];
 
 	short stun_method_code;
 	while(1){
 		receive(me, client, messageBuffer);
 		
+		printf("messageBuffer: %s\n", messageBuffer);
 		stun_method_code = ntohs(*(short *)(&messageBuffer[0]));
 		if(stun_method_code == 1){
 			stunService(messageBuffer, client);
 		}
 		else{
-			registerNewUser(messageBuffer, client);
+			if(strncmp("REG", messageBuffer, 3) == 0)
+				registerNewUser(messageBuffer, client);
+			// if(strncmp("LST", messageBuffer, 3))
 		}
 
 		memset(messageBuffer, 1,500);		
@@ -55,6 +59,7 @@ void stringAppend(char *parent, char *child){
 }
 
 void registerNewUser(char *message, Socket client){
+	printf("Some one is registering\n");
 	//copy name 
 	char name[30];
 	int i = 4;	
@@ -71,29 +76,30 @@ void registerNewUser(char *message, Socket client){
 	
 	//gui list
 	char buf[500]; buf[0] = 0;
-	stringAppend(buf, "LST_");
+	stringAppend(buf, "LST ");
 	sprintf(&buf[4], "%d", userCount - 1);
-	stringAppend(buf, "_");
+	stringAppend(buf, " ");
 
 	for(i = 0; i < userCount - 1; i++){
 		stringAppend(buf, users[i]->name);
 		stringAppend(buf, "_");
 		stringAppend(buf, users[i]->soc->ip);
-		stringAppend(buf, "_");
+		stringAppend(buf, ":");
 		stringAppend(buf, users[i]->soc->port);
 		stringAppend(buf, "|");
 	}
 	sendTo(me, client, buf);
 	buf[0] = 0;
-
+	
 	//gui new cho tat ca user
 	stringAppend(buf, "NEW");
 	stringAppend(buf, "_");
 	stringAppend(buf, temp->name);
 	stringAppend(buf, "_");
 	stringAppend(buf, client->ip);
-	stringAppend(buf, "_");
+	stringAppend(buf, ":");
 	stringAppend(buf, client->port);
+	stringAppend(buf, "|");
 
 	for(i = 0; i < userCount - 1; i++){
 		sendTo(me, users[i]->soc, buf);
