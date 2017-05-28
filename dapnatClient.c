@@ -43,7 +43,7 @@ int main(int argc,char *argv[]){
 
 	//create local socket with port 12345
 	me = newSocket("localhost", argv[1]);
-	server = newSocket("127.0.0.1", "3478");
+	server = newSocket(XSEED, "3478");
 
 	char publicAddr[16];
 	unsigned short openedPort = 0;
@@ -223,7 +223,7 @@ void stunService(Socket me, char *returnIp, unsigned short *returnPort){
 	int localSoc = me->systemSocketId;
 	//create server socket - STUN port 3478
 	struct sockaddr_in serverAddr;
-	serverAddr = createSocketAddr("localhost", 3478);
+	serverAddr = createSocketAddr(XSEED, 3478);
 
     //create STUNRequest
     unsigned char STUNRequest[20];
