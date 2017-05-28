@@ -132,7 +132,7 @@ void processServerMessage(char *messageBuffer){
 		socket[ptr-offset] = 0;
 		ptr++;
 		printf(ANSI_COLOR_YELLOW "%s has just joined" ANSI_COLOR_RESET "\n", name);
-		// runThread(&keepAliveService, (void *)socket);
+		runThread(&keepAliveService, (void *)parseSocket(socket));
 		phonebookPut(name, socket);
 	}
 }
@@ -216,7 +216,7 @@ void parseUserList(char *string, int numOfUser){
 		ptr++;
 
 		phonebookPut(name, socket);
-		// runThread(&keepAliveService, (void *)socket);
+		runThread(&keepAliveService, (void *)parseSocket(socket));
 		printf("%s\t%s\n", phonebookGet(name), phonebookGet(socket));
 	}
 	printf("++++++++++++++++++++\n");
