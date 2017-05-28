@@ -49,6 +49,8 @@ int main(int argc,char *argv[]){
 	unsigned short openedPort = 0;
 	stunService(me, publicAddr, &openedPort);
 
+	runThread(&keepAliveService, (void*)server);
+
 	printf("DAPNAT Client - working on socket %s:%d\n", publicAddr, openedPort);
 	printf("Please enter your name (A-Z | 1-9 | less than 50 characters): ");
 	
@@ -61,7 +63,7 @@ int main(int argc,char *argv[]){
 	Socket peer;
 
 	while(1){
-		fgets(buffer, 50, stdin);
+		fgets(buffer, 500, stdin);
 		
 		ptr = 0;
 		while(buffer[ptr] != 0 && ptr <= 50){
@@ -130,6 +132,7 @@ void processServerMessage(char *messageBuffer){
 		socket[ptr-offset] = 0;
 		ptr++;
 		printf(ANSI_COLOR_YELLOW "%s has just joined" ANSI_COLOR_RESET "\n", name);
+		// runThread(&keepAliveService, (void *)socket);
 		phonebookPut(name, socket);
 	}
 }
@@ -213,6 +216,7 @@ void parseUserList(char *string, int numOfUser){
 		ptr++;
 
 		phonebookPut(name, socket);
+		// runThread(&keepAliveService, (void *)socket);
 		printf("%s\t%s\n", phonebookGet(name), phonebookGet(socket));
 	}
 	printf("++++++++++++++++++++\n");
@@ -257,22 +261,18 @@ void stunService(Socket me, char *returnIp, unsigned short *returnPort){
 			printf("Public address: %s:%d\n", returnIp, *returnPort);
 		}
 		//prepare arg for thread
-		void *arg = malloc(sizeof(int));
-		*((int*)arg) = localSoc;
-		runThread(&keepAliveService, arg);
+		// void *arg = malloc(sizeof(int));
+		// *((int*)arg) = localSoc;
+		// runThread(&keepAliveService, arg);
 	}
 }
 
-void* keepAliveService(void *_socket ){
-	int socket = *(int *)_socket;
+void* keepAliveService(void *_socket){
+	Socket socket = (Socket)_socket;
 
-	//create dump server address
-	struct sockaddr_in dumpServer;
-	dumpServer = createSocketAddr("localhost", 3478);
-
+	char nothing[] = "Xin chao";
 	while(1){
-		sleep(10);
-		char nothing[] = "keepAlive";
-    	sendToAddr(socket, nothing, 10, &dumpServer);
+    	sendTo(me, socket, nothing);
+    	sleep(30);
 	}
 }
